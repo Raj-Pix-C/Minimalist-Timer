@@ -1,0 +1,8 @@
+{
+    "uuid": "timer-applet@user",
+    "name": "Timer Applet",
+    "description": "A simple countdown timer applet with bell notification",
+    "version": "1.0",
+    "cinnamon-version": ["4.0", "5.0", "6.0"],
+    "max-instances": "1"
+}
