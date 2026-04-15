@@ -2,6 +2,7 @@ const Applet = imports.ui.applet;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
+const Main = imports.ui.main;
 
 class TimerApplet extends Applet.TextApplet {
 
@@ -31,7 +32,6 @@ class TimerApplet extends Applet.TextApplet {
         this.menu.toggle();
     }
 
-    //  Safe async Zenity dialog
     _promptAndStart() {
         this._cancelTimer();
 
@@ -69,7 +69,6 @@ class TimerApplet extends Applet.TextApplet {
 
     _startTimer(minutes, seconds) {
         this._remainingSeconds = (minutes * 60) + seconds;
-
         this._updateLabel();
 
         this._countdownId = Mainloop.timeout_add_seconds(1, () => {
@@ -77,8 +76,9 @@ class TimerApplet extends Applet.TextApplet {
 
             if (this._remainingSeconds <= 0) {
                 this.set_applet_label("⏱ Done!");
-                this._playSound();
+                Main.notify("Times Up!");
                 this._cleanup();
+                this._cancelTimer();
                 return false;
             }
 
@@ -90,58 +90,8 @@ class TimerApplet extends Applet.TextApplet {
     _updateLabel() {
         let m = Math.floor(this._remainingSeconds / 60);
         let s = this._remainingSeconds % 60;
-
-        let display =
-            String(m).padStart(2, "0") + ":" +
-            String(s).padStart(2, "0");
-
-        this.set_applet_label("⏱ " + display);
+        this.set_applet_label("⏱ " + String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0"));
     }
-
-    //  Non-blocking sound playback
-    //_playSound() {
-    //    try {
-    //        let proc = new Gio.Subprocess({
-    //            argv: ["canberra-gtk-play", "-i", "complete"],
-    //            flags: Gio.SubprocessFlags.NONE
-    //        });
-    //
-    //       proc.init(null); // harmless here, but optional
-    //    } catch (e) {
-    //        global.logError(e);
-    //    }
-    //}
-
-_playSound() {
-    let count = 0;
-
-    let playOnce = () => {
-        try {
-            //new Gio.Subprocess({
-            //    argv: [
-            //        "paplay",
-            //        "/usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga"
-            //    ],
-            //    flags: Gio.SubprocessFlags.NONE
-            //});
-
-            //proc.init(null);
-
-            Util.spawnCommandLine("paplay /usr/share/sounds/freedesktop/stereo/alarm-clock-elapsed.oga");
-        } catch (e) {
-            global.logError(e);
-        }
-
-        count++;
-        return count < 3; // repeat 3 times
-    };
-
-    // play immediately
-    playOnce();
-
-    // repeat every 2 seconds
-    this._soundLoopId = Mainloop.timeout_add_seconds(2, playOnce);
-}
 
     _cancelTimer() {
         this._cleanup();
@@ -153,10 +103,6 @@ _playSound() {
             Mainloop.source_remove(this._countdownId);
             this._countdownId = null;
         }
-	if (this._soundLoopId) {
-            Mainloop.source_remove(this._soundLoopId);
-            this._soundLoopId = null;
-	}
     }
 }
 
