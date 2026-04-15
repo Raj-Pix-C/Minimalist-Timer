@@ -52,7 +52,7 @@ A lightweight countdown timer applet for the [Cinnamon desktop environment](http
 ## Project Structure
 
 ```
-timer@yourusername/
+timer-applet@user/
 ├── applet.js       # Main applet logic
 ├── metadata.json   # Applet metadata (uuid, name, version)
 └── README.md
